@@ -1,0 +1,72 @@
+import { schema, rules, CustomMessages } from '@ioc:Adonis/Core/Validator'
+//import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
+
+
+export default class UpdateDoctorValidator {
+  public schema = schema.create({
+    firstName: schema.string.optional({}, [
+      rules.trim(),
+      rules.minLength(2),
+      rules.maxLength(50),
+      rules.regex(/^[A-Za-z ]+$/),
+    ]),
+
+    lastName: schema.string.optional({}, [
+      rules.trim(),
+      rules.minLength(2),
+      rules.maxLength(50),
+      rules.regex(/^[A-Za-z ]+$/),
+    ]),
+
+    specialization: schema.string.optional({}, [
+      rules.trim(),
+      rules.minLength(2),
+      rules.maxLength(100),
+    ]),
+
+    phone: schema.string.optional({}, [
+      rules.regex(/^[0-9]{10}$/),
+    ]),
+
+    email: schema.string.optional({}, [
+      rules.email(),
+    ]),
+
+    consultationFee: schema.number.optional([
+      rules.range(1, 100000),
+    ]),
+
+    departmentId: schema.number.optional([
+      rules.exists({
+        table: 'departments',
+        column: 'id',
+      }),
+    ]),
+  })
+
+  public messages: CustomMessages = {
+    minLength:
+      '{{ field }} must contain at least {{ options.minLength }} characters',
+
+    maxLength:
+      '{{ field }} cannot exceed {{ options.maxLength }} characters',
+
+    email:
+      '{{ field }} must be a valid email address',
+
+    range:
+      '{{ field }} must be between {{ options.start }} and {{ options.stop }}',
+
+    'phone.regex':
+      'Phone number must contain exactly 10 digits',
+
+    'firstName.regex':
+      'First name can contain only letters and spaces',
+
+    'lastName.regex':
+      'Last name can contain only letters and spaces',
+
+    'departmentId.exists':
+      'Selected department does not exist',
+  }
+}
