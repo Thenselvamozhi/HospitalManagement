@@ -28,15 +28,13 @@ Route.get('/', async () => {
 Route.post('/register', 'AuthController.register');
 Route.post('/login', 'AuthController.login');
 
-
-
 // Protected Routes
 Route.group(() => {
   Route.get('/me', 'AuthController.me');
   // Patients
   Route.group(() => {
     Route.get('/patients', 'PatientsController.index');
-    Route.get('/patients/:id', 'PatientsController.show');
+    Route.get('/patients/search', 'PatientsController.search');
   }).middleware(['role:ADMIN,DOCTOR,RECEPTIONIST']);
 
   Route.group(() => {

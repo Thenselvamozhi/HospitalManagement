@@ -12,67 +12,76 @@
 | properly.
 |
 */
-
 import Logger from '@ioc:Adonis/Core/Logger'
 import HttpExceptionHandler from '@ioc:Adonis/Core/HttpExceptionHandler'
+import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 
 export default class ExceptionHandler extends HttpExceptionHandler {
-  constructor () {
+
+  constructor() {
     super(Logger)
   }
-  public async handle(error, ctx) {
+
+  public async handle(error: any, ctx: HttpContextContract) {
 
     console.log('ERROR CODE:', error.code)
-    console.log('ERROR MESSAGE:', error.message)
+    console.log('ERROR NAME:', error.name)
 
-  if (error.code === 'E_ROW_NOT_FOUND') {
-    return ctx.response.status(404).send({
-      message: 'Row does not exist'
-    })
-  }
+    if (error.code === 'E_VALIDATION_FAILURE') {
+      return ctx.response.status(422).send({
+        success: false,
+        message: 'Validation failed',
+        errors: error.messages.errors,
+      })
+    }
 
-  if (error.code === 'E_VALIDATION_FAILURE') {
-    return ctx.response.status(422).send({
-      message: 'Validation failed',
-      errors: error.messages
-    })
-  }
+    if (error.code === 'E_ROW_NOT_FOUND') {
+      return ctx.response.status(404).send({
+        success: false,
+        message: 'Resource not found',
+      })
+    }
 
-  if (error.message === 'INVALID_CREDENTIALS') {
-    return ctx.response.status(401).send({
+    if (error.code === 'INVALID_CREDENTIALS') {
+      return ctx.response.status(401).send({
+        success: false,
+        message: 'Invalid credentials',
+      })
+    }
+
+    if (error.code === 'TOKEN_MISSING') {
+      return ctx.response.status(401).send({
+        success: false,
+        message: 'Authorization token is required',
+      })
+    }
+
+    if (error.code === 'ACCESS_DENIED') {
+      return ctx.response.status(403).send({
+        success: false,
+        message: 'Access denied',
+      })
+    }
+
+    if (error.name === 'JsonWebTokenError') {
+      return ctx.response.status(401).send({
+        success: false,
+        message: 'Invalid token',
+      })
+    }
+
+    if (error.name === 'TokenExpiredError') {
+      return ctx.response.status(401).send({
+        success: false,
+        message: 'Token expired',
+      })
+    }
+
+    Logger.error(error)
+
+    return ctx.response.status(500).send({
       success: false,
-      message: 'Invalid credentials'
+      message: 'Internal server error',
     })
   }
-
-  if (error.message === 'TOKEN_MISSING') {
-    return ctx.response.status(401).send({
-      success: false,
-      message: 'Authorization token is required'
-    })
-  }
-
-  if (error.message === 'ACCESS_DENIED') {
-    return ctx.response.status(403).send({
-      success: false,
-      message: 'Access denied'
-    })
-  }
-
-  if (error.name === 'JsonWebTokenError') {
-    return ctx.response.status(401).send({
-      success: false,
-      message: 'Invalid token'
-    })
-  }
-
-  if (error.name === 'TokenExpiredError') {
-    return ctx.response.status(401).send({
-      success: false,
-      message: 'Token expired'
-    })
-  }
-
-  return super.handle(error, ctx)
-}
 }
